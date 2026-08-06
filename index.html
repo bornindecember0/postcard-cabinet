@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>明信片柜</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="phone" aria-label="明信片柜 App">
+        <header class="app-header">
+          <div>
+            <p class="eyebrow">Postbox</p>
+            <h1 id="page-title">明信片柜</h1>
+          </div>
+        </header>
+
+        <section class="page is-active" id="page-cabinet" aria-labelledby="page-title">
+          <div class="cabinet-count" aria-label="收藏摘要">
+            <strong id="total-count">0</strong>
+            <span>张明信片在柜子里</span>
+          </div>
+
+          <div class="filter-shell">
+            <button class="filter-toggle" id="filter-toggle" type="button" aria-expanded="false">筛选</button>
+            <div class="filter-bar" id="filter-bar" aria-label="检索明信片" aria-hidden="true">
+              <span class="filter-title">时间</span>
+              <div class="time-filter-list" id="time-filter-list" aria-label="时间排序">
+                <button class="filter-chip is-active" type="button" data-sort="newest">新到旧</button>
+                <button class="filter-chip" type="button" data-sort="oldest">旧到新</button>
+              </div>
+              <button class="clear-filter-button" id="clear-filters" type="button">清空</button>
+              <span class="filter-title">词条</span>
+              <div class="tag-filter-list" id="tag-filter-list" aria-label="词条筛选"></div>
+            </div>
+          </div>
+
+          <div class="cabinet-frame" aria-label="明信片展示架">
+            <div class="cabinet-top" aria-hidden="true">
+            </div>
+            <div class="cabinet" id="cabinet-list" aria-label="明信片架子"></div>
+            <div class="cabinet-feet" aria-hidden="true">
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
+          <div class="shelf-pager" id="shelf-pager" aria-hidden="true">
+            <button id="page-prev" type="button">上一页</button>
+            <span id="page-status">1 / 1</span>
+            <button id="page-next" type="button">下一页</button>
+          </div>
+        </section>
+
+        <section class="page" id="page-scan" aria-label="扫描入柜">
+          <form class="scan-form" id="postcard-form">
+            <div class="scan-grid">
+              <label class="scan-drop">
+                <input id="front-input" name="front" type="file" accept="image/*" capture="environment" />
+                <span class="drop-title">正面</span>
+                <span class="drop-hint">拍图像</span>
+                <img id="front-preview" alt="" />
+              </label>
+
+              <label class="scan-drop">
+                <input id="back-input" name="back" type="file" accept="image/*" capture="environment" />
+                <span class="drop-title">背面</span>
+                <span class="drop-hint">拍邮戳</span>
+                <img id="back-preview" alt="" />
+              </label>
+            </div>
+
+            <div class="scan-fields">
+              <label class="date-field">
+                <span>时间</span>
+                <input id="date-input" name="date" type="date" />
+              </label>
+
+              <div class="tag-field">
+                <span>词条</span>
+                <div class="tag-composer">
+                  <input id="tag-input" type="text" placeholder="创建或输入词条" list="tag-options" />
+                  <button class="secondary-button compact-button" id="add-tag" type="button">加入</button>
+                </div>
+                <datalist id="tag-options"></datalist>
+                <div class="tag-list" id="selected-tags" aria-label="已选择词条"></div>
+              </div>
+
+              <label class="note-field">
+                <span>备注</span>
+                <textarea id="note-input" name="note" rows="3" placeholder="写一点背后的故事"></textarea>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button class="secondary-button" id="cancel-scan" type="button">返回</button>
+              <button class="primary-button" type="submit">收进柜子</button>
+            </div>
+          </form>
+        </section>
+
+        <button class="floating-add" id="quick-scan" type="button" aria-label="扫描明信片">
+          <span aria-hidden="true">+</span>
+        </button>
+
+        <section class="viewer" id="postcard-viewer" aria-hidden="true" aria-label="明信片查看器">
+          <div class="viewer-topbar">
+            <button class="viewer-button" id="viewer-close" type="button">返回</button>
+            <span id="viewer-title">明信片</span>
+            <div class="viewer-actions">
+              <button class="viewer-button danger-button" id="viewer-delete" type="button">删除</button>
+              <button class="viewer-button" id="viewer-flip" type="button">翻面</button>
+            </div>
+          </div>
+
+          <button class="viewer-stage" id="viewer-stage" type="button" aria-label="点击翻转明信片">
+            <span class="viewer-card" id="viewer-card"></span>
+          </button>
+
+          <p class="viewer-note" id="viewer-note" hidden></p>
+
+          <label class="zoom-control">
+            <span>缩放</span>
+            <input id="viewer-zoom" type="range" min="1" max="3.2" value="1" step="0.05" />
+          </label>
+        </section>
+      </main>
+    </div>
+
+    <template id="shelf-template">
+      <section class="shelf-row">
+        <div class="shelf-track"></div>
+      </section>
+    </template>
+
+    <script src="./src/app.js" type="module"></script>
+  </body>
+</html>
