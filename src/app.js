@@ -23,6 +23,8 @@ let didViewerMove = false;
 let viewerDragStart = null;
 let viewerPinchStart = null;
 const viewerPointers = new Map();
+let cropState = null;
+let activeCropCorner = null;
 let pendingImages = {
   frontImage: "",
   backImage: "",
@@ -45,6 +47,13 @@ const backInput = document.querySelector("#back-input");
 const frontPreview = document.querySelector("#front-preview");
 const backPreview = document.querySelector("#back-preview");
 const totalCount = document.querySelector("#total-count");
+const cropper = document.querySelector("#scan-cropper");
+const cropTitle = document.querySelector("#crop-title");
+const cropStage = document.querySelector("#crop-stage");
+const cropImage = document.querySelector("#crop-image");
+const cropOverlay = document.querySelector("#crop-overlay");
+const cropPolygon = document.querySelector("#crop-polygon");
+const cropHandles = [...cropOverlay.querySelectorAll("circle")];
 const dateInput = document.querySelector("#date-input");
 const tagInput = document.querySelector("#tag-input");
 const tagOptions = document.querySelector("#tag-options");
@@ -381,9 +390,245 @@ async function readImage(file) {
 
 async function handleImageInput(input, preview, imageKey) {
   const dataUrl = await readImage(input.files?.[0]);
-  pendingImages[imageKey] = dataUrl;
-  preview.src = dataUrl;
-  preview.parentElement.classList.toggle("has-image", Boolean(dataUrl));
+  if (!dataUrl) return;
+  openCropper({ dataUrl, input, preview, imageKey });
+}
+
+function openCropper({ dataUrl, input, preview, imageKey }) {
+  cropState = {
+    dataUrl,
+    input,
+    preview,
+    imageKey,
+    corners: [],
+  };
+  cropTitle.textContent = imageKey === "frontImage" ? "裁切正面" : "裁切背面";
+  cropImage.addEventListener("load", initializeCropCorners, { once: true });
+  cropImage.src = dataUrl;
+  cropper.setAttribute("aria-hidden", "false");
+  phone.classList.add("is-cropping");
+}
+
+function closeCropper({ resetInput = false } = {}) {
+  if (resetInput && cropState?.input) cropState.input.value = "";
+  cropper.setAttribute("aria-hidden", "true");
+  phone.classList.remove("is-cropping");
+  activeCropCorner = null;
+  cropState = null;
+  cropImage.removeAttribute("src");
+}
+
+function initializeCropCorners() {
+  if (!cropState) return;
+  const rect = getCropImageRect();
+  const insetX = rect.width * 0.08;
+  const insetY = rect.height * 0.12;
+  cropState.corners = [
+    { x: rect.left + insetX, y: rect.top + insetY },
+    { x: rect.right - insetX, y: rect.top + insetY },
+    { x: rect.right - insetX, y: rect.bottom - insetY },
+    { x: rect.left + insetX, y: rect.bottom - insetY },
+  ];
+  renderCropOverlay();
+}
+
+function getCropImageRect() {
+  const stageRect = cropStage.getBoundingClientRect();
+  const imageRect = cropImage.getBoundingClientRect();
+  return {
+    left: imageRect.left - stageRect.left,
+    top: imageRect.top - stageRect.top,
+    right: imageRect.right - stageRect.left,
+    bottom: imageRect.bottom - stageRect.top,
+    width: imageRect.width,
+    height: imageRect.height,
+  };
+}
+
+function renderCropOverlay() {
+  if (!cropState) return;
+  cropPolygon.setAttribute("points", cropState.corners.map((point) => `${point.x},${point.y}`).join(" "));
+  cropHandles.forEach((handle, index) => {
+    const point = cropState.corners[index];
+    handle.setAttribute("cx", point.x);
+    handle.setAttribute("cy", point.y);
+  });
+}
+
+function handleCropPointerDown(event) {
+  const handle = event.target.closest("circle");
+  if (!handle || !cropState) return;
+  activeCropCorner = Number(handle.dataset.corner);
+  cropOverlay.setPointerCapture(event.pointerId);
+  event.preventDefault();
+}
+
+function handleCropPointerMove(event) {
+  if (activeCropCorner === null || !cropState) return;
+  const stageRect = cropStage.getBoundingClientRect();
+  const imageRect = getCropImageRect();
+  cropState.corners[activeCropCorner] = {
+    x: clamp(event.clientX - stageRect.left, imageRect.left, imageRect.right),
+    y: clamp(event.clientY - stageRect.top, imageRect.top, imageRect.bottom),
+  };
+  renderCropOverlay();
+  event.preventDefault();
+}
+
+function handleCropPointerUp() {
+  activeCropCorner = null;
+}
+
+async function applyCropper() {
+  if (!cropState) return;
+  const croppedDataUrl = await createScannedImage(cropState);
+  pendingImages[cropState.imageKey] = croppedDataUrl;
+  cropState.preview.src = croppedDataUrl;
+  cropState.preview.parentElement.classList.add("has-image");
+  closeCropper();
+}
+
+async function createScannedImage(state) {
+  const sourceImage = await loadImage(state.dataUrl);
+  const imageRect = getCropImageRect();
+  const scaleX = sourceImage.naturalWidth / imageRect.width;
+  const scaleY = sourceImage.naturalHeight / imageRect.height;
+  const sourceCorners = state.corners.map((point) => ({
+    x: (point.x - imageRect.left) * scaleX,
+    y: (point.y - imageRect.top) * scaleY,
+  }));
+
+  const outputWidth = 1184;
+  const outputHeight = 800;
+  const sourceCanvas = document.createElement("canvas");
+  sourceCanvas.width = sourceImage.naturalWidth;
+  sourceCanvas.height = sourceImage.naturalHeight;
+  const sourceContext = sourceCanvas.getContext("2d");
+  sourceContext.drawImage(sourceImage, 0, 0);
+  const sourceData = sourceContext.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+
+  const outputCanvas = document.createElement("canvas");
+  outputCanvas.width = outputWidth;
+  outputCanvas.height = outputHeight;
+  const outputContext = outputCanvas.getContext("2d");
+  const outputData = outputContext.createImageData(outputWidth, outputHeight);
+  const transform = solveHomography(
+    [
+      { x: 0, y: 0 },
+      { x: outputWidth - 1, y: 0 },
+      { x: outputWidth - 1, y: outputHeight - 1 },
+      { x: 0, y: outputHeight - 1 },
+    ],
+    sourceCorners,
+  );
+
+  for (let y = 0; y < outputHeight; y += 1) {
+    for (let x = 0; x < outputWidth; x += 1) {
+      const sourcePoint = applyHomography(transform, x, y);
+      const color = sampleImage(sourceData, sourcePoint.x, sourcePoint.y);
+      const targetIndex = (y * outputWidth + x) * 4;
+      outputData.data[targetIndex] = enhanceChannel(color[0]);
+      outputData.data[targetIndex + 1] = enhanceChannel(color[1]);
+      outputData.data[targetIndex + 2] = enhanceChannel(color[2]);
+      outputData.data[targetIndex + 3] = color[3];
+    }
+  }
+
+  outputContext.putImageData(outputData, 0, 0);
+  return outputCanvas.toDataURL("image/jpeg", 0.9);
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", reject);
+    image.src = src;
+  });
+}
+
+function solveHomography(fromPoints, toPoints) {
+  const matrix = [];
+  const values = [];
+
+  fromPoints.forEach((from, index) => {
+    const to = toPoints[index];
+    matrix.push([from.x, from.y, 1, 0, 0, 0, -to.x * from.x, -to.x * from.y]);
+    values.push(to.x);
+    matrix.push([0, 0, 0, from.x, from.y, 1, -to.y * from.x, -to.y * from.y]);
+    values.push(to.y);
+  });
+
+  return gaussianSolve(matrix, values);
+}
+
+function gaussianSolve(matrix, values) {
+  const size = values.length;
+  const augmented = matrix.map((row, index) => [...row, values[index]]);
+
+  for (let column = 0; column < size; column += 1) {
+    let pivot = column;
+    for (let row = column + 1; row < size; row += 1) {
+      if (Math.abs(augmented[row][column]) > Math.abs(augmented[pivot][column])) pivot = row;
+    }
+    [augmented[column], augmented[pivot]] = [augmented[pivot], augmented[column]];
+
+    const divisor = augmented[column][column] || 1;
+    for (let item = column; item <= size; item += 1) augmented[column][item] /= divisor;
+
+    for (let row = 0; row < size; row += 1) {
+      if (row === column) continue;
+      const factor = augmented[row][column];
+      for (let item = column; item <= size; item += 1) {
+        augmented[row][item] -= factor * augmented[column][item];
+      }
+    }
+  }
+
+  return augmented.map((row) => row[size]);
+}
+
+function applyHomography(transform, x, y) {
+  const denominator = transform[6] * x + transform[7] * y + 1;
+  return {
+    x: (transform[0] * x + transform[1] * y + transform[2]) / denominator,
+    y: (transform[3] * x + transform[4] * y + transform[5]) / denominator,
+  };
+}
+
+function sampleImage(imageData, x, y) {
+  const clampedX = clamp(x, 0, imageData.width - 1);
+  const clampedY = clamp(y, 0, imageData.height - 1);
+  const left = Math.floor(clampedX);
+  const top = Math.floor(clampedY);
+  const right = Math.min(left + 1, imageData.width - 1);
+  const bottom = Math.min(top + 1, imageData.height - 1);
+  const tx = clampedX - left;
+  const ty = clampedY - top;
+  const topLeft = getPixel(imageData, left, top);
+  const topRight = getPixel(imageData, right, top);
+  const bottomLeft = getPixel(imageData, left, bottom);
+  const bottomRight = getPixel(imageData, right, bottom);
+
+  return topLeft.map((channel, index) => {
+    const topValue = channel * (1 - tx) + topRight[index] * tx;
+    const bottomValue = bottomLeft[index] * (1 - tx) + bottomRight[index] * tx;
+    return topValue * (1 - ty) + bottomValue * ty;
+  });
+}
+
+function getPixel(imageData, x, y) {
+  const index = (y * imageData.width + x) * 4;
+  return [
+    imageData.data[index],
+    imageData.data[index + 1],
+    imageData.data[index + 2],
+    imageData.data[index + 3],
+  ];
+}
+
+function enhanceChannel(value) {
+  return clamp((value - 128) * 1.08 + 138, 0, 255);
 }
 
 function resetForm() {
@@ -569,9 +814,22 @@ viewerZoomInput.addEventListener("input", (event) => {
   setViewerZoom(Number(event.target.value));
 });
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && cropState) {
+    closeCropper({ resetInput: true });
+    return;
+  }
   if (event.key === "Escape" && viewerPostcard) {
     returnToCabinet();
   }
+});
+cropOverlay.addEventListener("pointerdown", handleCropPointerDown);
+cropOverlay.addEventListener("pointermove", handleCropPointerMove);
+cropOverlay.addEventListener("pointerup", handleCropPointerUp);
+cropOverlay.addEventListener("pointercancel", handleCropPointerUp);
+document.querySelector("#crop-cancel").addEventListener("click", () => closeCropper({ resetInput: true }));
+document.querySelector("#crop-apply").addEventListener("click", applyCropper);
+window.addEventListener("resize", () => {
+  if (cropState) initializeCropCorners();
 });
 
 frontInput.addEventListener("change", () => handleImageInput(frontInput, frontPreview, "frontImage"));

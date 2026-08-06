@@ -106,6 +106,25 @@
           </form>
         </section>
 
+        <section class="cropper" id="scan-cropper" aria-hidden="true" aria-label="扫描裁切">
+          <div class="cropper-topbar">
+            <button class="viewer-button" id="crop-cancel" type="button">取消</button>
+            <span id="crop-title">调整边缘</span>
+            <button class="viewer-button" id="crop-apply" type="button">确认</button>
+          </div>
+
+          <div class="crop-stage" id="crop-stage">
+            <img id="crop-image" alt="" />
+            <svg class="crop-overlay" id="crop-overlay" aria-hidden="true">
+              <polygon id="crop-polygon"></polygon>
+              <circle data-corner="0" r="9"></circle>
+              <circle data-corner="1" r="9"></circle>
+              <circle data-corner="2" r="9"></circle>
+              <circle data-corner="3" r="9"></circle>
+            </svg>
+          </div>
+        </section>
+
         <button class="floating-add" id="quick-scan" type="button" aria-label="扫描明信片">
           <span aria-hidden="true">+</span>
         </button>
