@@ -503,11 +503,12 @@ h1 {
 .scan-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 .scan-drop {
-  min-height: 178px;
+  aspect-ratio: 1.48 / 1;
+  min-height: 0;
   display: grid;
   place-items: center;
   align-content: center;
@@ -560,7 +561,7 @@ h1 {
 
 .scan-fields {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   padding-top: 2px;
 }
 
@@ -592,8 +593,12 @@ h1 {
 }
 
 .note-field textarea {
-  min-height: 76px;
+  min-height: 72px;
   resize: vertical;
+}
+
+.tag-field {
+  margin-bottom: -4px;
 }
 
 .tag-composer {
