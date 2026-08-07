@@ -1,4 +1,4 @@
-const CACHE_NAME = "postcard-cabinet-v5";
+const CACHE_NAME = "postcard-cabinet-v6";
 const APP_SHELL = [
   "./",
   "./index.html",

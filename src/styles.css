@@ -449,16 +449,18 @@ h1 {
 
 .cabinet-sketch {
   position: absolute;
-  left: -2px;
-  right: -2px;
-  top: -4px;
-  height: 382px;
-  z-index: 3;
+  left: 14px;
+  right: 14px;
+  top: 50px;
+  height: 315px;
+  z-index: 1;
   pointer-events: none;
   background: var(--sketch-line);
-  opacity: .78;
-  -webkit-mask: url("../assets/figma/postbox-shelf-sketch.svg") center top / 100% 100% no-repeat;
-  mask: url("../assets/figma/postbox-shelf-sketch.svg") center top / 100% 100% no-repeat;
+  border-radius: 16px 15px 20px 18px;
+  opacity: .22;
+  mix-blend-mode: multiply;
+  -webkit-mask: url("../assets/figma/postbox-shelf-sketch.svg") center -58px / 116% auto no-repeat;
+  mask: url("../assets/figma/postbox-shelf-sketch.svg") center -58px / 116% auto no-repeat;
 }
 
 .cabinet {
@@ -468,6 +470,7 @@ h1 {
   border: 1px solid rgb(23 20 18 / 12%);
   border-radius: 9px 8px 18px 16px;
   position: relative;
+  z-index: 2;
   background:
     radial-gradient(circle at 22% 18%, rgb(255 255 255 / 22%), transparent 28%),
     linear-gradient(180deg, var(--cabinet-body-a), var(--cabinet-body-b));
