@@ -20,6 +20,7 @@
             <p class="eyebrow">Postbox</p>
             <h1 id="page-title">明信片柜</h1>
           </div>
+          <button class="decor-toggle" id="decor-toggle" type="button" aria-expanded="false">装饰</button>
         </header>
 
         <section class="page is-active" id="page-cabinet" aria-labelledby="page-title">
@@ -43,6 +44,13 @@
           </div>
 
           <div class="cabinet-frame" aria-label="明信片展示架">
+            <div class="decor-layer" aria-hidden="true">
+              <div class="decor-frame" id="decor-frame" hidden>
+                <img id="decor-frame-image" alt="" />
+              </div>
+              <div class="decor-stamp" id="decor-stamp" hidden></div>
+              <div class="decor-label" id="decor-label" hidden>Postbox</div>
+            </div>
             <div class="cabinet-top" aria-hidden="true">
             </div>
             <div class="cabinet" id="cabinet-list" aria-label="明信片架子"></div>
@@ -57,6 +65,38 @@
             <span id="page-status">1 / 1</span>
             <button id="page-next" type="button">下一页</button>
           </div>
+
+          <section class="decor-panel" id="decor-panel" aria-hidden="true" aria-label="装饰柜子">
+            <div class="decor-section">
+              <span>柜子</span>
+              <div class="decor-options" aria-label="柜子颜色">
+                <button type="button" data-cabinet-theme="warm">胡桃</button>
+                <button type="button" data-cabinet-theme="cream">奶油</button>
+                <button type="button" data-cabinet-theme="sage">绿柜</button>
+                <button type="button" data-cabinet-theme="rosewood">红木</button>
+              </div>
+            </div>
+            <div class="decor-section">
+              <span>背景</span>
+              <div class="decor-options" aria-label="背景">
+                <button type="button" data-bg-theme="paper">纸</button>
+                <button type="button" data-bg-theme="room">墙纸</button>
+                <button type="button" data-bg-theme="desk">桌面</button>
+              </div>
+            </div>
+            <div class="decor-section">
+              <span>摆件</span>
+              <div class="decor-options" aria-label="摆件">
+                <button type="button" data-ornament="frame">相框</button>
+                <button type="button" data-ornament="stamp">邮票</button>
+                <button type="button" data-ornament="label">标签</button>
+              </div>
+              <label class="frame-upload">
+                <input id="frame-image-input" type="file" accept="image/*" />
+                <span>换相框照片</span>
+              </label>
+            </div>
+          </section>
         </section>
 
         <section class="page" id="page-scan" aria-label="扫描入柜">

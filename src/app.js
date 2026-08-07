@@ -1,6 +1,17 @@
 const STORAGE_KEY = "postcard-cabinet.items.v1";
 const TAGS_STORAGE_KEY = "postcard-cabinet.tags.v1";
+const DECOR_STORAGE_KEY = "postcard-cabinet.decor.v1";
 const DEFAULT_TAGS = ["词条一", "词条二", "词条三"];
+const DEFAULT_DECOR = {
+  cabinetTheme: "warm",
+  backgroundTheme: "paper",
+  ornaments: {
+    frame: false,
+    stamp: false,
+    label: false,
+  },
+  frameImage: "",
+};
 const SHELF_COUNT = 3;
 const POSTCARDS_PER_SHELF = 4;
 const POSTCARDS_PER_PAGE = SHELF_COUNT * POSTCARDS_PER_SHELF;
@@ -9,10 +20,12 @@ const starterPostcards = [];
 
 let postcards = loadPostcards();
 let tagLabels = loadTagLabels();
+let decor = loadDecor();
 let activePage = "cabinet";
 let activeFilters = { tag: "", sort: "newest" };
 let shelfPage = 0;
 let isFilterOpen = false;
+let isDecorOpen = false;
 let selectedTags = [];
 let viewerPostcard = null;
 let viewerSide = "front";
@@ -33,6 +46,13 @@ let pendingImages = {
 const pages = [...document.querySelectorAll(".page")];
 const phone = document.querySelector(".phone");
 const titleEl = document.querySelector("#page-title");
+const decorToggle = document.querySelector("#decor-toggle");
+const decorPanel = document.querySelector("#decor-panel");
+const decorFrame = document.querySelector("#decor-frame");
+const decorFrameImage = document.querySelector("#decor-frame-image");
+const decorStamp = document.querySelector("#decor-stamp");
+const decorLabel = document.querySelector("#decor-label");
+const frameImageInput = document.querySelector("#frame-image-input");
 const cabinetList = document.querySelector("#cabinet-list");
 const shelfTemplate = document.querySelector("#shelf-template");
 const shelfPager = document.querySelector("#shelf-pager");
@@ -102,6 +122,33 @@ function saveTagLabels() {
   localStorage.setItem(TAGS_STORAGE_KEY, JSON.stringify(tagLabels));
 }
 
+function loadDecor() {
+  const raw = localStorage.getItem(DECOR_STORAGE_KEY);
+  if (!raw) return cloneDefaultDecor();
+
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      ...cloneDefaultDecor(),
+      ...parsed,
+      ornaments: {
+        ...DEFAULT_DECOR.ornaments,
+        ...(parsed.ornaments || {}),
+      },
+    };
+  } catch {
+    return cloneDefaultDecor();
+  }
+}
+
+function saveDecor() {
+  localStorage.setItem(DECOR_STORAGE_KEY, JSON.stringify(decor));
+}
+
+function cloneDefaultDecor() {
+  return JSON.parse(JSON.stringify(DEFAULT_DECOR));
+}
+
 function normalizePostcard(postcard) {
   const { place, source, ...rest } = postcard;
   return {
@@ -127,6 +174,10 @@ function showPage(pageName) {
   pages.forEach((page) => page.classList.toggle("is-active", page.id === `page-${pageName}`));
   titleEl.textContent = pageTitles[pageName];
 
+  if (pageName !== "cabinet") {
+    isDecorOpen = false;
+    renderDecorPanel();
+  }
   if (pageName === "cabinet") renderCabinet();
 }
 
@@ -196,6 +247,36 @@ function renderShelfPager(totalPages) {
   pageStatus.textContent = `${shelfPage + 1} / ${totalPages}`;
   document.querySelector("#page-prev").disabled = shelfPage === 0;
   document.querySelector("#page-next").disabled = shelfPage >= totalPages - 1;
+}
+
+function applyDecor() {
+  phone.dataset.cabinetTheme = decor.cabinetTheme;
+  phone.dataset.bgTheme = decor.backgroundTheme;
+  decorFrame.hidden = !decor.ornaments.frame;
+  decorStamp.hidden = !decor.ornaments.stamp;
+  decorLabel.hidden = !decor.ornaments.label;
+
+  if (decor.frameImage) {
+    decorFrameImage.src = decor.frameImage;
+  } else {
+    decorFrameImage.removeAttribute("src");
+  }
+
+  decorPanel.querySelectorAll("[data-cabinet-theme]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.cabinetTheme === decor.cabinetTheme);
+  });
+  decorPanel.querySelectorAll("[data-bg-theme]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.bgTheme === decor.backgroundTheme);
+  });
+  decorPanel.querySelectorAll("[data-ornament]").forEach((button) => {
+    button.classList.toggle("is-active", Boolean(decor.ornaments[button.dataset.ornament]));
+  });
+}
+
+function renderDecorPanel() {
+  decorToggle.setAttribute("aria-expanded", String(isDecorOpen));
+  decorToggle.classList.toggle("is-active", isDecorOpen);
+  decorPanel.setAttribute("aria-hidden", String(!isDecorOpen));
 }
 
 function renderMiniFace(postcard, side) {
@@ -749,8 +830,49 @@ function escapeHtml(value) {
 }
 
 document.querySelector("#quick-scan").addEventListener("click", () => showPage("scan"));
+decorToggle.addEventListener("click", () => {
+  isDecorOpen = !isDecorOpen;
+  if (isDecorOpen) {
+    isFilterOpen = false;
+    renderFilterState();
+  }
+  renderDecorPanel();
+});
+decorPanel.addEventListener("click", (event) => {
+  const cabinetButton = event.target.closest("[data-cabinet-theme]");
+  const backgroundButton = event.target.closest("[data-bg-theme]");
+  const ornamentButton = event.target.closest("[data-ornament]");
+
+  if (cabinetButton) {
+    decor.cabinetTheme = cabinetButton.dataset.cabinetTheme;
+  }
+  if (backgroundButton) {
+    decor.backgroundTheme = backgroundButton.dataset.bgTheme;
+  }
+  if (ornamentButton) {
+    const ornament = ornamentButton.dataset.ornament;
+    decor.ornaments[ornament] = !decor.ornaments[ornament];
+  }
+
+  if (cabinetButton || backgroundButton || ornamentButton) {
+    saveDecor();
+    applyDecor();
+  }
+});
+frameImageInput.addEventListener("change", async () => {
+  const image = await readImage(frameImageInput.files?.[0]);
+  if (!image) return;
+  decor.frameImage = image;
+  decor.ornaments.frame = true;
+  saveDecor();
+  applyDecor();
+});
 filterToggle.addEventListener("click", () => {
   isFilterOpen = !isFilterOpen;
+  if (isFilterOpen) {
+    isDecorOpen = false;
+    renderDecorPanel();
+  }
   renderFilterState();
 });
 timeFilterList.addEventListener("click", (event) => {
@@ -858,6 +980,8 @@ postcardForm.addEventListener("submit", (event) => {
 });
 
 dateInput.value = new Date().toISOString().slice(0, 10);
+applyDecor();
+renderDecorPanel();
 renderTagOptions();
 renderFilterOptions();
 renderFilterState();
