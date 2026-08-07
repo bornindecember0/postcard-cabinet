@@ -2,6 +2,11 @@ const STORAGE_KEY = "postcard-cabinet.items.v1";
 const TAGS_STORAGE_KEY = "postcard-cabinet.tags.v1";
 const DECOR_STORAGE_KEY = "postcard-cabinet.decor.v1";
 const DEFAULT_TAGS = ["词条一", "词条二", "词条三"];
+const VASE_SHAPES = {
+  shape1: "./assets/figma/vase-shape-1.svg",
+  shape2: "./assets/figma/vase-shape-2.svg",
+  shape3: "./assets/figma/vase-shape-3.svg",
+};
 const DEFAULT_DECOR = {
   cabinetTheme: "warm",
   lineTheme: "sepia",
@@ -10,9 +15,9 @@ const DEFAULT_DECOR = {
     frame: false,
     stamp: false,
     label: false,
-    vase: false,
   },
   frameImage: "",
+  vaseShape: "",
 };
 const SHELF_COUNT = 3;
 const POSTCARDS_PER_SHELF = 4;
@@ -134,6 +139,7 @@ function loadDecor() {
     return {
       ...cloneDefaultDecor(),
       ...parsed,
+      vaseShape: VASE_SHAPES[parsed.vaseShape] ? parsed.vaseShape : parsed.ornaments?.vase ? "shape1" : "",
       ornaments: {
         ...DEFAULT_DECOR.ornaments,
         ...(parsed.ornaments || {}),
@@ -259,7 +265,8 @@ function applyDecor() {
   decorFrame.hidden = !decor.ornaments.frame;
   decorStamp.hidden = !decor.ornaments.stamp;
   decorLabel.hidden = !decor.ornaments.label;
-  decorVase.hidden = !decor.ornaments.vase;
+  decorVase.hidden = !decor.vaseShape;
+  if (decor.vaseShape) decorVase.src = VASE_SHAPES[decor.vaseShape];
 
   if (decor.frameImage) {
     decorFrameImage.src = decor.frameImage;
@@ -278,6 +285,9 @@ function applyDecor() {
   });
   decorPanel.querySelectorAll("[data-ornament]").forEach((button) => {
     button.classList.toggle("is-active", Boolean(decor.ornaments[button.dataset.ornament]));
+  });
+  decorPanel.querySelectorAll("[data-vase-shape]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.vaseShape === decor.vaseShape);
   });
 }
 
@@ -851,6 +861,7 @@ decorPanel.addEventListener("click", (event) => {
   const lineButton = event.target.closest("[data-line-theme]");
   const backgroundButton = event.target.closest("[data-bg-theme]");
   const ornamentButton = event.target.closest("[data-ornament]");
+  const vaseButton = event.target.closest("[data-vase-shape]");
 
   if (cabinetButton) {
     decor.cabinetTheme = cabinetButton.dataset.cabinetTheme;
@@ -865,8 +876,12 @@ decorPanel.addEventListener("click", (event) => {
     const ornament = ornamentButton.dataset.ornament;
     decor.ornaments[ornament] = !decor.ornaments[ornament];
   }
+  if (vaseButton) {
+    const nextShape = vaseButton.dataset.vaseShape;
+    decor.vaseShape = decor.vaseShape === nextShape ? "" : nextShape;
+  }
 
-  if (cabinetButton || lineButton || backgroundButton || ornamentButton) {
+  if (cabinetButton || lineButton || backgroundButton || ornamentButton || vaseButton) {
     saveDecor();
     applyDecor();
   }
