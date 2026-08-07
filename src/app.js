@@ -4,6 +4,7 @@ const DECOR_STORAGE_KEY = "postcard-cabinet.decor.v1";
 const DEFAULT_TAGS = ["词条一", "词条二", "词条三"];
 const DEFAULT_DECOR = {
   cabinetTheme: "warm",
+  lineTheme: "sepia",
   backgroundTheme: "paper",
   ornaments: {
     frame: false,
@@ -251,6 +252,7 @@ function renderShelfPager(totalPages) {
 
 function applyDecor() {
   phone.dataset.cabinetTheme = decor.cabinetTheme;
+  phone.dataset.lineTheme = decor.lineTheme;
   phone.dataset.bgTheme = decor.backgroundTheme;
   decorFrame.hidden = !decor.ornaments.frame;
   decorStamp.hidden = !decor.ornaments.stamp;
@@ -264,6 +266,9 @@ function applyDecor() {
 
   decorPanel.querySelectorAll("[data-cabinet-theme]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.cabinetTheme === decor.cabinetTheme);
+  });
+  decorPanel.querySelectorAll("[data-line-theme]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.lineTheme === decor.lineTheme);
   });
   decorPanel.querySelectorAll("[data-bg-theme]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.bgTheme === decor.backgroundTheme);
@@ -840,11 +845,15 @@ decorToggle.addEventListener("click", () => {
 });
 decorPanel.addEventListener("click", (event) => {
   const cabinetButton = event.target.closest("[data-cabinet-theme]");
+  const lineButton = event.target.closest("[data-line-theme]");
   const backgroundButton = event.target.closest("[data-bg-theme]");
   const ornamentButton = event.target.closest("[data-ornament]");
 
   if (cabinetButton) {
     decor.cabinetTheme = cabinetButton.dataset.cabinetTheme;
+  }
+  if (lineButton) {
+    decor.lineTheme = lineButton.dataset.lineTheme;
   }
   if (backgroundButton) {
     decor.backgroundTheme = backgroundButton.dataset.bgTheme;
@@ -854,7 +863,7 @@ decorPanel.addEventListener("click", (event) => {
     decor.ornaments[ornament] = !decor.ornaments[ornament];
   }
 
-  if (cabinetButton || backgroundButton || ornamentButton) {
+  if (cabinetButton || lineButton || backgroundButton || ornamentButton) {
     saveDecor();
     applyDecor();
   }
