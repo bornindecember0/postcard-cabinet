@@ -425,7 +425,7 @@ h1 {
   right: 18px;
   top: 31px;
   height: 30px;
-  border: 1px solid rgb(23 20 18 / 14%);
+  border: 0;
   border-bottom: 0;
   border-radius: 14px 16px 2px 2px;
   background:
@@ -433,7 +433,7 @@ h1 {
     linear-gradient(180deg, var(--cabinet-top-a), var(--cabinet-top-b));
   transform: skewX(-18deg);
   transform-origin: bottom left;
-  opacity: .82;
+  opacity: .58;
 }
 
 .cabinet-top::after {
@@ -443,7 +443,7 @@ h1 {
   right: -11px;
   bottom: -8px;
   height: 9px;
-  border: 1px solid rgb(23 20 18 / 12%);
+  border: 0;
   border-radius: 8px 5px 3px 4px;
   background:
     var(--cabinet-lip);
@@ -466,7 +466,7 @@ h1 {
   position: absolute;
   inset: 0;
   background: var(--sketch-line);
-  opacity: .58;
+  opacity: .82;
   mix-blend-mode: multiply;
 }
 
@@ -476,7 +476,7 @@ h1 {
 }
 
 .cabinet-sketch::after {
-  opacity: .38;
+  opacity: .52;
   transform: translateY(1px);
   -webkit-mask: url("../assets/figma/cabinet-detail.svg") center top / 100% 100% no-repeat;
   mask: url("../assets/figma/cabinet-detail.svg") center top / 100% 100% no-repeat;
@@ -486,22 +486,21 @@ h1 {
   display: grid;
   gap: 10px;
   padding: 15px 16px 21px;
-  border: 1px solid rgb(23 20 18 / 12%);
+  border: 0;
   border-radius: 9px 8px 18px 16px;
   position: relative;
   background:
-    radial-gradient(circle at 22% 18%, rgb(255 255 255 / 22%), transparent 28%),
-    linear-gradient(180deg, var(--cabinet-body-a), var(--cabinet-body-b));
+    radial-gradient(circle at 22% 18%, rgb(255 255 255 / 25%), transparent 32%),
+    linear-gradient(180deg, color-mix(in srgb, var(--cabinet-body-a) 76%, transparent), color-mix(in srgb, var(--cabinet-body-b) 70%, transparent));
   box-shadow:
-    inset 0 0 0 4px rgb(255 250 243 / 9%),
-    inset 9px 0 18px rgb(23 20 18 / 5%),
-    0 7px 0 rgb(94 64 42 / 18%),
-    0 16px 20px rgb(23 20 18 / 10%);
+    inset 0 0 0 4px rgb(255 250 243 / 8%),
+    inset 9px 0 18px rgb(23 20 18 / 3%),
+    0 14px 20px rgb(23 20 18 / 7%);
 }
 
 .cabinet::before,
 .cabinet::after {
-  content: "";
+  content: none;
   position: absolute;
   top: 11px;
   bottom: 14px;
@@ -525,13 +524,13 @@ h1 {
   min-height: 78px;
   position: relative;
   padding: 9px 9px 14px;
-  border: 1px solid rgb(23 20 18 / 10%);
+  border: 0;
   border-radius: 8px 7px 10px 9px;
   background:
-    linear-gradient(90deg, rgb(255 250 243 / 16%), transparent 20% 82%, rgb(23 20 18 / 4%)),
-    linear-gradient(180deg, var(--shelf-row-a), var(--shelf-row-b));
+    linear-gradient(90deg, rgb(255 250 243 / 16%), transparent 20% 82%, rgb(23 20 18 / 3%)),
+    linear-gradient(180deg, color-mix(in srgb, var(--shelf-row-a) 68%, transparent), color-mix(in srgb, var(--shelf-row-b) 58%, transparent));
   box-shadow:
-    inset 0 9px 15px rgb(23 20 18 / 7%);
+    inset 0 9px 15px rgb(23 20 18 / 4%);
 }
 
 .shelf-row::after {
@@ -541,11 +540,12 @@ h1 {
   right: -4px;
   bottom: -2px;
   height: 12px;
-  border: 1px solid rgb(23 20 18 / 12%);
+  border: 0;
   border-radius: 7px 5px 8px 6px;
   background:
     var(--shelf-lip);
-  box-shadow: 0 4px 6px rgb(23 20 18 / 9%);
+  opacity: .46;
+  box-shadow: 0 4px 6px rgb(23 20 18 / 5%);
 }
 
 .shelf-track {
@@ -568,12 +568,12 @@ h1 {
 .cabinet-feet span {
   width: 38px;
   height: 32px;
-  border: 1px solid rgb(23 20 18 / 12%);
+  border: 0;
   border-top: 0;
   border-radius: 0 0 21px 18px;
   background:
     linear-gradient(180deg, var(--cabinet-foot-a), var(--cabinet-foot-b));
-  opacity: .78;
+  opacity: .44;
 }
 
 .decor-panel {
