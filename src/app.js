@@ -10,6 +10,7 @@ const DEFAULT_DECOR = {
     frame: false,
     stamp: false,
     label: false,
+    vase: false,
   },
   frameImage: "",
 };
@@ -53,6 +54,7 @@ const decorFrame = document.querySelector("#decor-frame");
 const decorFrameImage = document.querySelector("#decor-frame-image");
 const decorStamp = document.querySelector("#decor-stamp");
 const decorLabel = document.querySelector("#decor-label");
+const decorVase = document.querySelector("#decor-vase");
 const frameImageInput = document.querySelector("#frame-image-input");
 const cabinetList = document.querySelector("#cabinet-list");
 const shelfTemplate = document.querySelector("#shelf-template");
@@ -257,6 +259,7 @@ function applyDecor() {
   decorFrame.hidden = !decor.ornaments.frame;
   decorStamp.hidden = !decor.ornaments.stamp;
   decorLabel.hidden = !decor.ornaments.label;
+  decorVase.hidden = !decor.ornaments.vase;
 
   if (decor.frameImage) {
     decorFrameImage.src = decor.frameImage;

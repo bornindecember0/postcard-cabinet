@@ -419,6 +419,17 @@ h1 {
   box-shadow: 0 3px 7px rgb(23 20 18 / 12%);
 }
 
+.decor-vase {
+  position: absolute;
+  right: 26px;
+  top: -34px;
+  width: 86px;
+  height: auto;
+  transform: rotate(2deg);
+  opacity: .92;
+  filter: drop-shadow(0 6px 7px rgb(23 20 18 / 11%));
+}
+
 .cabinet-top {
   position: absolute;
   left: 16px;
@@ -471,15 +482,12 @@ h1 {
 }
 
 .cabinet-sketch::before {
-  -webkit-mask: url("../assets/figma/cabinet-base.svg") center top / 100% 100% no-repeat;
-  mask: url("../assets/figma/cabinet-base.svg") center top / 100% 100% no-repeat;
+  -webkit-mask: url("../assets/figma/shelf.svg") center top / 100% 100% no-repeat;
+  mask: url("../assets/figma/shelf.svg") center top / 100% 100% no-repeat;
 }
 
 .cabinet-sketch::after {
-  opacity: .52;
-  transform: translateY(1px);
-  -webkit-mask: url("../assets/figma/cabinet-detail.svg") center top / 100% 100% no-repeat;
-  mask: url("../assets/figma/cabinet-detail.svg") center top / 100% 100% no-repeat;
+  display: none;
 }
 
 .cabinet {
