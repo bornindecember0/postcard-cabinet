@@ -1,14 +1,10 @@
-const CACHE_NAME = "postcard-cabinet-v12";
+const CACHE_NAME = "postcard-cabinet-v13";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./src/app.js",
   "./src/styles.css",
-  "./assets/figma/shelf.svg",
-  "./assets/figma/vase-shape-1.svg",
-  "./assets/figma/vase-shape-2.svg",
-  "./assets/figma/vase-shape-3.svg",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
 ];
